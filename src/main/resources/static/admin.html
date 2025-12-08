@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Admin - Student Prediction</title></head>
+<body>
+<h2>Admin Dashboard</h2>
+<form id="uploadForm" enctype="multipart/form-data">
+  <label>Upload dataset (CSV, last column = status pass/fail):</label>
+  <input type="file" name="file" id="file" />
+  <button type="button" onclick="upload()">Upload & Trigger Training (async)</button>
+  <button type="button" onclick="trainNow()">Train Now (sync)</button>
+</form>
+<div id="result"></div>
+<script>
+function upload(){
+  const f=document.getElementById('file').files[0];
+  const fd=new FormData(); fd.append('file',f);
+  fetch('/admin/upload-dataset',{method:'POST', body:fd}).then(r=>r.text()).then(t=>document.getElementById('result').innerText=t);
+}
+function trainNow(){
+  const f=document.getElementById('file').files[0];
+  const fd=new FormData(); fd.append('file',f);
+  fetch('/admin/train-now',{method:'POST', body:fd}).then(r=>r.text()).then(t=>document.getElementById('result').innerText=t);
+}
+</script>
+</body>
+</html>
