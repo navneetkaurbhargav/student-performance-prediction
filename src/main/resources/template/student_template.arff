@@ -1,0 +1,12 @@
+@RELATION student_performance
+
+@ATTRIBUTE attendance NUMERIC
+@ATTRIBUTE assignment NUMERIC
+@ATTRIBUTE midterm NUMERIC
+@ATTRIBUTE study_hours NUMERIC
+@ATTRIBUTE status {pass,fail}
+
+@DATA
+% Example rows (match sample CSV)
+75,80,70,10,pass
+40,50,45,3,fail
