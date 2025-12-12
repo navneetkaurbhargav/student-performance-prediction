@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Retrain Model - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="fragments/header :: header"></div>
+    
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h4>Retrain Machine Learning Model</h4>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                        
+                        <form th:action="@{/admin/retrain}" method="post" th:object="${retrainingRequest}">
+                            <div class="mb-3">
+                                <label class="form-label">Dataset Path</label>
+                                <input type="text" class="form-control" th:field="*{datasetPath}" 
+                                       placeholder="Path to dataset file (e.g., ./data/student_dataset.arff)" required>
+                                <small class="text-muted">Provide full path to ARFF or CSV dataset file</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Algorithm</label>
+                                <select class="form-select" th:field="*{algorithm}" required>
+                                    <option value="">Select Algorithm</option>
+                                    <option value="RANDOM_FOREST">Random Forest</option>
+                                    <option value="NAIVE_BAYES">Naive Bayes</option>
+                                    <option value="J48">J48 Decision Tree</option>
+                                    <option value="LOGISTIC_REGRESSION">Logistic Regression</option>
+                                </select>
+                                <small class="text-muted">Machine learning algorithm to use</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Model Name</label>
+                                <input type="text" class="form-control" th:field="*{modelName}" 
+                                       placeholder="e.g., RandomForest_v3" required>
+                                <small class="text-muted">Give a descriptive name for the new model</small>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <h6>Retraining Process:</h6>
+                                <ul class="mb-0">
+                                    <li>Upload will be processed asynchronously via JMS queue</li>
+                                    <li>Current model remains active during retraining</li>
+                                    <li>New model will be evaluated automatically</li>
+                                    <li>System will notify when retraining is complete</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-warning btn-lg">Start Retraining Process</button>
+                                <a href="/admin/dashboard" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </form>
+                        
+                        <div class="mt-4">
+                            <h5>Sample Dataset Format (ARFF)</h5>
+                            <pre class="bg-light p-3 rounded">
+@relation student_performance
+
+@attribute attendance_rate numeric
+@attribute previous_gpa numeric
+@attribute study_hours_weekly numeric
+@attribute assignment_scores_avg numeric
+@attribute extracurricular_hours numeric
+@attribute family_support numeric
+@attribute financial_stability numeric
+@attribute class {pass,fail}
+
+@data
+85.5,3.2,15,78.5,5,4,4,pass
+92.0,3.8,20,88.0,2,5,5,pass
+65.0,2.1,8,62.0,10,2,3,fail</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

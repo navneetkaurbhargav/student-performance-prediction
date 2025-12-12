@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Batch Prediction - Faculty</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div th:replace="fragments/header :: header"></div>
+    
+    <div class="container mt-4">
+        <h2>Batch Performance Prediction</h2>
+        <p class="text-muted">Predict performance for multiple students at once</p>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>Batch Prediction Form</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${success}" class="alert alert-success">
+                            <h6>Batch Prediction Completed Successfully!</h6>
+                            <p>Processed <span th:text="${responses.size()}">0</span> students</p>
+                        </div>
+                        
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                        
+                        <form th:action="@{/faculty/batch-predict}" method="post" id="batchForm">
+                            <div class="mb-3">
+                                <label class="form-label">Course/Class</label>
+                                <select class="form-select" name="courseId">
+                                    <option value="CS101">CS101 - Introduction to Programming</option>
+                                    <option value="MATH201">MATH201 - Calculus I</option>
+                                    <option value="ENG102">ENG102 - English Composition</option>
+                                    <option value="SCI301">SCI301 - General Science</option>
+                                </select>
+                                <small class="text-muted">Select the course for these predictions</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0">Student Data</label>
+                                    <button type="button" id="addStudentBtn" class="btn btn-sm btn-outline-primary">
+                                        + Add Student
+                                    </button>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="studentsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Attendance (%)</th>
+                                                <th>Previous GPA</th>
+                                                <th>Study Hours/Week</th>
+                                                <th>Assignment Avg (%)</th>
+                                                <th>Extracurricular Hrs</th>
+                                                <th>Family Support (1-5)</th>
+                                                <th>Financial Stability (1-5)</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="request, stat : ${requests}">
+                                                <td th:text="${stat.count}">1</td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm" 
+                                                           name="attendanceRate" th:value="${request.attendanceRate}"
+                                                           min="0" max="100" step="0.1" required>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm" 
+                                                           name="previousGPA" th:value="${request.previousGPA}"
+                                                           min="0" max="4" step="0.01" required>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm" 
+                                                           name="studyHoursWeekly" th:value="${request.studyHoursWeekly}"
+                                                           min="0" max="40" required>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm" 
+                                                           name="assignmentScoresAvg" th:value="${request.assignmentScoresAvg}"
+                                                           min="0" max="100" step="0.1" required>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm" 
+                                                           name="extracurricularHours" th:value="${request.extracurricularHours}"
+                                                           min="0" max="20" required>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm" 
+                                                           name="familySupport" th:value="${request.familySupport}"
+                                                           min="1" max="5" required>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm" 
+                                                           name="financialStability" th:value="${request.financialStability}"
+                                                           min="1" max="5" required>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-danger remove-row" 
+                                                            th:if="${stat.count > 3}">Remove</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <small class="text-muted">Enter data for each student. Minimum 3 students required.</small>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="includeRecommendations" name="includeRecommendations" checked>
+                                <label class="form-check-label" for="includeRecommendations">
+                                    Include improvement recommendations
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear All</button>
+                                <button type="submit" class="btn btn-primary">Run Batch Prediction</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div th:if="${success and responses}" class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>Prediction Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="exportToCSV()">
+                                    📥 Export Results to CSV
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-info" onclick="toggleChart()">
+                                    📊 Toggle Summary Chart
+                                </button>
+                            </div>
+                            <div>
+                                <span class="badge bg-success">Pass: <span id="passCount">0</span></span>
+                                <span class="badge bg-danger ms-2">Fail: <span id="failCount">0</span></span>
+                                <span class="badge bg-warning ms-2">Avg Probability: <span id="avgProbability">0</span>%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-container mb-4" style="display: none;" id="summaryChart">
+                            <canvas id="batchResultsChart" width="400" height="150"></canvas>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover" id="resultsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Student #</th>
+                                        <th>Attendance</th>
+                                        <th>GPA</th>
+                                        <th>Prediction</th>
+                                        <th>Pass Probability</th>
+                                        <th>Confidence</th>
+                                        <th>Risk Level</th>
+                                        <th>Recommendations</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="response, stat : ${responses}" 
+                                        th:class="${response.prediction == 'PASS'} ? 'table-success' : 'table-danger'">
+                                        <td th:text="${stat.count}">1</td>
+                                        <td th:text="${#numbers.formatDecimal(requests[stat.index].attendanceRate, 1, 2)} + '%'">85%</td>
+                                        <td th:text="${#numbers.formatDecimal(requests[stat.index].previousGPA, 1, 2)}">3.2</td>
+                                        <td>
+                                            <span th:if="${response.prediction == 'PASS'}" class="badge bg-success">PASS</span>
+                                            <span th:if="${response.prediction == 'FAIL'}" class="badge bg-danger">FAIL</span>
+                                        </td>
+                                        <td th:text="${#numbers.formatDecimal(response.passingProbability, 1, 2)} + '%'">85.5%</td>
+                                        <td th:text="${#numbers.formatDecimal(response.confidenceScore * 100, 1, 2)} + '%'">87.5%</td>
+                                        <td>
+                                            <span th:if="${response.passingProbability >= 70}" class="badge bg-success">Low Risk</span>
+                                            <span th:if="${response.passingProbability >= 50 and response.passingProbability < 70}" 
+                                                  class="badge bg-warning">Medium Risk</span>
+                                            <span th:if="${response.passingProbability < 50}" class="badge bg-danger">High Risk</span>
+                                        </td>
+                                        <td>
+                                            <div th:if="${not #lists.isEmpty(response.recommendations)}">
+                                                <ul class="list-unstyled mb-0">
+                                                    <li th:each="rec : ${response.recommendations}" 
+                                                        th:text="${rec}" class="small"></li>
+                                                </ul>
+                                            </div>
+                                            <span th:unless="${not #lists.isEmpty(response.recommendations)}" class="text-muted small">No recommendations</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <h6>Batch Summary:</h6>
+                            <ul class="mb-0">
+                                <li>Total Students Processed: <span th:text="${responses.size()}">0</span></li>
+                                <li>Model Used: <span th:text="${responses[0].modelUsed}">RandomForest v2</span></li>
+                                <li>Algorithm: <span th:text="${responses[0].algorithm}">Random Forest</span></li>
+                                <li>Average Confidence: 
+                                    <span th:text="${#numbers.formatDecimal(
+                                        responses.?[confidenceScore].![confidenceScore * 100].stream()
+                                            .mapToDouble(d -> d).average().orElse(0), 1, 2)}">0</span>%
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Tips Section -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>Batch Prediction Tips</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Best Practices:</h6>
+                                <ul>
+                                    <li>Use accurate, up-to-date student data</li>
+                                    <li>Include at least 5-10 students for meaningful analysis</li>
+                                    <li>Review and verify data before submission</li>
+                                    <li>Export results for record-keeping</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Interpretation Guidelines:</h6>
+                                <ul>
+                                    <li><span class="badge bg-success">Green</span>: High probability of passing (&gt;70%)</li>
+                                    <li><span class="badge bg-warning">Yellow</span>: Moderate probability (50-70%)</li>
+                                    <li><span class="badge bg-danger">Red</span>: Low probability (&lt;50%)</li>
+                                    <li>Confidence score indicates model certainty</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        // Initialize with at least 3 rows if none exist
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableBody = document.querySelector('#studentsTable tbody');
+            if (tableBody.querySelectorAll('tr').length === 0) {
+                addStudentRow();
+                addStudentRow();
+                addStudentRow();
+            }
+            
+            // Add event listeners to existing remove buttons
+            document.querySelectorAll('.remove-row').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (tableBody.querySelectorAll('tr').length > 3) {
+                        this.closest('tr').remove();
+                        updateRowNumbers();
+                    }
+                });
+            });
+            
+            // Add student button
+            document.getElementById('addStudentBtn').addEventListener('click', addStudentRow);
+            
+            // Form validation
+            document.getElementById('batchForm').addEventListener('submit', function(e) {
+                const rows = tableBody.querySelectorAll('tr');
+                if (rows.length < 3) {
+                    e.preventDefault();
+                    alert('Please add at least 3 students for batch prediction.');
+                    return;
+                }
+                
+                let isValid = true;
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('input[type="number"]');
+                    inputs.forEach(input => {
+                        const min = parseFloat(input.min);
+                        const max = parseFloat(input.max);
+                        const value = parseFloat(input.value);
+                        
+                        if (isNaN(value) || value < min || value > max) {
+                            isValid = false;
+                            input.classList.add('is-invalid');
+                        } else {
+                            input.classList.remove('is-invalid');
+                        }
+                    });
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Please correct the highlighted errors before submitting.');
+                }
+            });
+            
+            // Calculate summary if results exist
+            if (/*[[${success}]]*/ false) {
+                calculateSummary();
+                initChart();
+            }
+        });
+        
+        function addStudentRow() {
+            const tableBody = document.querySelector('#studentsTable tbody');
+            const rowCount = tableBody.querySelectorAll('tr').length;
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${rowCount + 1}</td>
+                <td><input type="number" class="form-control form-control-sm" name="attendanceRate" min="0" max="100" step="0.1" required></td>
+                <td><input type="number" class="form-control form-control-sm" name="previousGPA" min="0" max="4" step="0.01" required></td>
+                <td><input type="number" class="form-control form-control-sm" name="studyHoursWeekly" min="0" max="40" required></td>
+                <td><input type="number" class="form-control form-control-sm" name="assignmentScoresAvg" min="0" max="100" step="0.1" required></td>
+                <td><input type="number" class="form-control form-control-sm" name="extracurricularHours" min="0" max="20" required></td>
+                <td><input type="number" class="form-control form-control-sm" name="familySupport" min="1" max="5" required></td>
+                <td><input type="number" class="form-control form-control-sm" name="financialStability" min="1" max="5" required></td>
+                <td><button type="button" class="btn btn-sm btn-danger remove-row">Remove</button></td>
+            `;
+            tableBody.appendChild(newRow);
+            
+            // Add remove functionality
+            newRow.querySelector('.remove-row').addEventListener('click', function() {
+                const tableBody = document.querySelector('#studentsTable tbody');
+                if (tableBody.querySelectorAll('tr').length > 3) {
+                    this.closest('tr').remove();
+                    updateRowNumbers();
+                }
+            });
+            
+            updateRowNumbers();
+        }
+        
+        function updateRowNumbers() {
+            document.querySelectorAll('#studentsTable tbody tr').forEach((row, index) => {
+                row.querySelector('td:first-child').textContent = index + 1;
+            });
+        }
+        
+        function clearForm() {
+            if (confirm('Are you sure you want to clear all student data?')) {
+                const tableBody = document.querySelector('#studentsTable tbody');
+                // Keep only 3 empty rows
+                while (tableBody.querySelectorAll('tr').length > 3) {
+                    tableBody.lastChild.remove();
+                }
+                
+                // Clear input values
+                tableBody.querySelectorAll('input').forEach(input => {
+                    input.value = '';
+                    input.classList.remove('is-invalid');
+                });
+                
+                // Reset to 3 empty rows if less than 3
+                while (tableBody.querySelectorAll('tr').length < 3) {
+                    addStudentRow();
+                }
+                
+                updateRowNumbers();
+            }
+        }
+        
+        function calculateSummary() {
+            const rows = document.querySelectorAll('#resultsTable tbody tr');
+            let passCount = 0;
+            let failCount = 0;
+            let totalProbability = 0;
+            
+            rows.forEach(row => {
+                const prediction = row.querySelector('td:nth-child(4) .badge').textContent;
+                const probability = parseFloat(row.querySelector('td:nth-child(5)').textContent);
+                
+                if (prediction === 'PASS') {
+                    passCount++;
+                } else {
+                    failCount++;
+                }
+                
+                totalProbability += probability;
+            });
+            
+            const avgProbability = rows.length > 0 ? (totalProbability / rows.length).toFixed(2) : '0';
+            
+            document.getElementById('passCount').textContent = passCount;
+            document.getElementById('failCount').textContent = failCount;
+            document.getElementById('avgProbability').textContent = avgProbability;
+        }
+        
+        function initChart() {
+            const ctx = document.getElementById('batchResultsChart').getContext('2d');
+            const rows = document.querySelectorAll('#resultsTable tbody tr');
+            const labels = Array.from(rows).map((_, i) => `Student ${i + 1}`);
+            const probabilities = Array.from(rows).map(row => 
+                parseFloat(row.querySelector('td:nth-child(5)').textContent)
+            );
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Pass Probability (%)',
+                        data: probabilities,
+                        backgroundColor: probabilities.map(p => 
+                            p >= 70 ? 'rgba(40, 167, 69, 0.7)' : 
+                            p >= 50 ? 'rgba(255, 193, 7, 0.7)' : 
+                            'rgba(220, 53, 69, 0.7)'
+                        ),
+                        borderColor: probabilities.map(p => 
+                            p >= 70 ? 'rgba(40, 167, 69, 1)' : 
+                            p >= 50 ? 'rgba(255, 193, 7, 1)' : 
+                            'rgba(220, 53, 69, 1)'
+                        ),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Pass Probability (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Students'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Batch Prediction Results'
+                        },
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        function toggleChart() {
+            const chartContainer = document.getElementById('summaryChart');
+            chartContainer.style.display = chartContainer.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function exportToCSV() {
+            const table = document.getElementById('resultsTable');
+            if (!table) {
+                alert('No results to export.');
+                return;
+            }
+            
+            let csv = [];
+            const rows = table.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const rowData = [];
+                const cols = row.querySelectorAll('td, th');
+                
+                cols.forEach(col => {
+                    let text = col.innerText;
+                    // Remove badge HTML and clean text
+                    text = text.replace(/PASS|FAIL/g, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+                    rowData.push(`"${text}"`);
+                });
+                
+                csv.push(rowData.join(','));
+            });
+            
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            const course = document.querySelector('select[name="courseId"]').value;
+            const timestamp = new Date().toISOString().slice(0, 10);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `batch_predictions_${course}_${timestamp}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Quick fill sample data for testing
+        function fillSampleData() {
+            const sampleData = [
+                [85.5, 3.2, 15, 78.5, 5, 4, 4],
+                [92.0, 3.8, 20, 88.0, 2, 5, 5],
+                [65.0, 2.1, 8, 62.0, 10, 2, 3],
+                [78.0, 2.8, 12, 72.0, 8, 3, 4],
+                [55.0, 1.8, 6, 58.0, 12, 1, 2]
+            ];
+            
+            const tableBody = document.querySelector('#studentsTable tbody');
+            // Clear existing rows except first 3
+            while (tableBody.querySelectorAll('tr').length > 3) {
+                tableBody.lastChild.remove();
+            }
+            
+            // Add sample data rows
+            sampleData.forEach((data, index) => {
+                if (index >= 3) {
+                    addStudentRow();
+                }
+                
+                const row = tableBody.querySelectorAll('tr')[index];
+                const inputs = row.querySelectorAll('input');
+                
+                data.forEach((value, i) => {
+                    if (inputs[i]) {
+                        inputs[i].value = value;
+                    }
+                });
+            });
+            
+            updateRowNumbers();
+        }
+        
+        // Add sample data button for testing
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttonContainer = document.querySelector('.card-header .d-flex');
+            if (buttonContainer) {
+                const sampleBtn = document.createElement('button');
+                sampleBtn.type = 'button';
+                sampleBtn.className = 'btn btn-sm btn-outline-secondary ms-2';
+                sampleBtn.textContent = 'Fill Sample Data';
+                sampleBtn.onclick = fillSampleData;
+                buttonContainer.appendChild(sampleBtn);
+            }
+        });
+    </script>
+</body>
+</html>

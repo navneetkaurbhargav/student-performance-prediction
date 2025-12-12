@@ -1,37 +1,37 @@
-# Student Performance Prediction - Spring Boot + Weka
+# Student Performance Prediction System
 
-Java: 1.8
-Maven: 3.8+
+A lightweight enterprise-style system for predicting student academic performance using machine learning.
 
-This project is a runnable skeleton for the Student Performance Prediction system.
-It uses:
-- Spring Boot 2.7.x
-- Weka 3.8
-- ActiveMQ for JMS (broker expected at tcp://localhost:61616)
-- MySQL (configure credentials in src/main/resources/application.properties)
+## Features
+- 🤖 Machine Learning predictions using Weka
+- 🔄 Asynchronous model retraining with JMS
+- 📊 RESTful API for integration
+- 👥 Multi-role authentication (Student, Faculty, Admin)
+- 💾 MySQL database storage
+- 🎨 Thymeleaf UI templates
 
-## Quick start (MySQL)
+## Tech Stack
+- Java 1.8
+- Spring Boot 2.7.18
+- Weka 3.8.5
+- ActiveMQ (JMS)
+- MySQL 8.0+
+- Thymeleaf
+- Maven 3.8+
 
-1. Create database and tables:
-   - Run sql/schema.sql on your MySQL server:
-     mysql -u root -p < sql/schema.sql
+## Setup Instructions
 
-2. Update `src/main/resources/application.properties` with your MySQL credentials.
+### 1. Prerequisites
+```bash
+# Install Java 1.8
+sudo apt install openjdk-8-jdk
 
-3. Start ActiveMQ (example with Docker):
-   docker run -d --name activemq -p 61616:61616 -p 8161:8161 rmohr/activemq:latest
+# Install Maven
+sudo apt install maven
 
-4. Build and run:
-   mvn clean package
-   java -jar target/student-performance-prediction-0.1.0.jar
+# Install MySQL
+sudo apt install mysql-server
 
-5. Open Admin UI:
-   http://localhost:8080/admin.html
-   Upload `data/sample_student_data.csv` to test training.
-
-6. After training, open Student UI:
-   http://localhost:8080/student.html
-
-## Notes
-- The predict endpoint expects a template ARFF to describe attribute order. A template is included at src/main/resources/template/student_template.arff.
-- For quick testing you can switch to H2 by changing application.properties settings.
+# Download ActiveMQ
+wget https://archive.apache.org/dist/activemq/5.16.6/apache-activemq-5.16.6-bin.tar.gz
+tar -xzf apache-activemq-5.16.6-bin.tar.gz

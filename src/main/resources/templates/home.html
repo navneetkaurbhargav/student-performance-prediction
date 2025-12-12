@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Performance Prediction System</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+<!-- Header Fragment -->
+<div th:replace="fragments/header :: header"></div>
+
+<!-- Main Content -->
+<main class="flex-grow-1">
+    <div class="container mt-4">
+        <!-- Welcome Message -->
+        <div class="jumbotron bg-light p-5 rounded shadow-sm mb-5">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-4 text-primary">
+                        <i class="fas fa-graduation-cap"></i> Student Performance Prediction System
+                    </h1>
+                    <p class="lead mt-3">
+                        AI-powered system to predict student academic performance using machine learning.
+                        Identify at-risk students and provide personalized recommendations.
+                    </p>
+                    <hr class="my-4">
+                    <p>
+                        This system helps educators identify students who may need additional support
+                        and provides data-driven insights for academic success.
+                    </p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="bg-primary text-white p-4 rounded-circle shadow"
+                         style="width: 200px; height: 200px; margin: 0 auto;">
+                        <i class="fas fa-brain fa-5x mt-4"></i>
+                        <h5 class="mt-3">AI Powered</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role-Based Access Cards -->
+        <div class="row mb-5">
+            <h2 class="text-center mb-6">Access Portals</h2>
+
+            <!-- Student Portal -->
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 shadow-sm border-primary">
+                    <div class="card-header bg-primary text-white text-center">
+                        <i class="fas fa-user-graduate fa-3x mb-2"></i>
+                        <h4 class="card-title mb-0">Student Portal</h4>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text flex-grow-1">
+                            Get personalized performance predictions and improvement recommendations
+                            based on your academic metrics.
+                        </p>
+                        <div class="mt-auto">
+                            <a th:href="@{/student/dashboard}" class="btn btn-primary w-100"
+                               sec:authorize="hasRole('STUDENT')">
+                                <i class="fas fa-sign-in-alt"></i> Enter Student Portal
+                            </a>
+                            <div class="alert alert-info mt-2" sec:authorize="!hasRole('STUDENT')">
+                                <small><i class="fas fa-info-circle"></i> Student role required</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <small>Features: Predictions • Recommendations • History</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Faculty Portal -->
+<!--            <div class="col-md-4 mb-4">-->
+<!--                <div class="card h-100 shadow-sm border-info">-->
+<!--                    <div class="card-header bg-info text-white text-center">-->
+<!--                        <i class="fas fa-chalkboard-teacher fa-3x mb-2"></i>-->
+<!--                        <h4 class="card-title mb-0">Faculty Portal</h4>-->
+<!--                    </div>-->
+<!--                    <div class="card-body d-flex flex-column">-->
+<!--                        <p class="card-text flex-grow-1">-->
+<!--                            Monitor class performance, run batch predictions, analyze trends,-->
+<!--                            and identify at-risk students.-->
+<!--                        </p>-->
+<!--                        <div class="mt-auto">-->
+<!--                            <a th:href="@{/faculty/dashboard}" class="btn btn-info w-100"-->
+<!--                               sec:authorize="hasRole('FACULTY')">-->
+<!--                                <i class="fas fa-sign-in-alt"></i> Enter Faculty Portal-->
+<!--                            </a>-->
+<!--                            <div class="alert alert-info mt-2" sec:authorize="!hasRole('FACULTY')">-->
+<!--                                <small><i class="fas fa-info-circle"></i> Faculty role required</small>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="card-footer text-muted">-->
+<!--                        <small>Features: Analytics • Batch Predictions • Reports</small>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+            <!-- Admin Portal -->
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 shadow-sm border-warning">
+                    <div class="card-header bg-warning text-dark text-center">
+                        <i class="fas fa-cogs fa-3x mb-2"></i>
+                        <h4 class="card-title mb-0">Admin Portal</h4>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text flex-grow-1">
+                            Manage ML models, trigger retraining, monitor system performance,
+                            and configure system settings.
+                        </p>
+                        <div class="mt-auto">
+                            <a th:href="@{/admin/dashboard}" class="btn btn-warning w-100"
+                               sec:authorize="hasRole('ADMIN')">
+                                <i class="fas fa-sign-in-alt"></i> Enter Admin Portal
+                            </a>
+                            <div class="alert alert-info mt-2" sec:authorize="!hasRole('ADMIN')">
+                                <small><i class="fas fa-info-circle"></i> Admin role required</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <small>Features: Model Management • System Monitoring • Configuration</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Features -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-dark text-white">
+                        <h3 class="mb-0"><i class="fas fa-star"></i> System Features</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center mb-3">
+                                <div class="p-3 border rounded">
+                                    <i class="fas fa-robot fa-2x text-primary mb-2"></i>
+                                    <h5>ML Predictions</h5>
+                                    <p class="small">Uses Weka ML algorithms for accurate predictions</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <div class="p-3 border rounded">
+                                    <i class="fas fa-chart-bar fa-2x text-success mb-2"></i>
+                                    <h5>Performance Analytics</h5>
+                                    <p class="small">Detailed analytics and visualization tools</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <div class="p-3 border rounded">
+                                    <i class="fas fa-sync-alt fa-2x text-warning mb-2"></i>
+                                    <h5>Async Retraining</h5>
+                                    <p class="small">JMS-based asynchronous model retraining</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <div class="p-3 border rounded">
+                                    <i class="fas fa-shield-alt fa-2x text-danger mb-2"></i>
+                                    <h5>Secure Access</h5>
+                                    <p class="small">Role-based access control for all users</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Form for Non-Authenticated Users -->
+        <div sec:authorize="!isAuthenticated()" class="row mb-5">
+            <div class="col-md-6 offset-md-3">
+                <div class="card shadow">
+                    <div class="card-header bg-secondary text-white">
+                        <h4 class="mb-0"><i class="fas fa-sign-in-alt"></i> Login</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/login}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username"
+                                       required placeholder="Enter username">
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password"
+                                       required placeholder="Enter password">
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt"></i> Login
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="mt-4">
+                            <h6>Demo Credentials:</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <div class="card bg-light">
+                                        <div class="card-body p-2">
+                                            <small>
+                                                <strong>Student</strong><br>
+                                                username: <code>student</code><br>
+                                                password: <code>password</code>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+<!--                                <div class="col-md-4">-->
+<!--                                    <div class="card bg-light">-->
+<!--                                        <div class="card-body p-2">-->
+<!--                                            <small>-->
+<!--                                                <strong>Faculty</strong><br>-->
+<!--                                                username: <code>faculty</code><br>-->
+<!--                                                password: <code>password</code>-->
+<!--                                            </small>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+                                <div class="col-md-6 mb-2">
+                                    <div class="card bg-light">
+                                        <div class="card-body p-2">
+                                            <small>
+                                                <strong>Admin</strong><br>
+                                                username: <code>admin</code><br>
+                                                password: <code>password</code>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div sec:authorize="hasRole('ADMIN')" class="row">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0"><i class="fas fa-heartbeat"></i> System Status</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6>Database</h6>
+                                        <span class="badge bg-success">Connected</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6>ActiveMQ</h6>
+                                        <span class="badge bg-success">Running</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6>ML Model</h6>
+                                        <span class="badge bg-success">Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6>Users Online</h6>
+                                        <h4 class="text-success">1</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer Fragment -->
+<div th:replace="fragments/footer :: footer"></div>
+
+<!-- Scripts Fragment -->
+<div th:replace="fragments/scripts :: scripts"></div>
+</body>
+</html>

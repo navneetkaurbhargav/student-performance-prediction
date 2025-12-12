@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Analytics - Faculty</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div th:replace="fragments/header :: header"></div>
+    
+    <div class="container mt-4">
+        <h2>Performance Analytics</h2>
+        <p class="text-muted">Class performance statistics and visualizations</p>
+        
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6>Total Students</h6>
+                        <h3 th:text="${totalPredictions}">150</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6>Prediction Accuracy</h6>
+                        <h3 th:text="${averageAccuracy} + '%'">87.5%</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6>Pass Rate</h6>
+                        <h3 th:text="${passRate} + '%'" class="text-success">72.3%</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6>Fail Rate</h6>
+                        <h3 th:text="${failRate} + '%'" class="text-danger">27.7%</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Pass/Fail Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="passFailChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Performance by Attendance</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="attendanceChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>At-Risk Students</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover">
+                            <thead class="table-danger">
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Pass Probability</th>
+                                    <th>Attendance</th>
+                                    <th>Previous GPA</th>
+                                    <th>Risk Level</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>S003</td>
+                                    <td>Bob Wilson</td>
+                                    <td>35%</td>
+                                    <td>65%</td>
+                                    <td>2.1</td>
+                                    <td><span class="badge bg-danger">High Risk</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-warning">Flag for Support</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>S005</td>
+                                    <td>Alex Johnson</td>
+                                    <td>45%</td>
+                                    <td>70%</td>
+                                    <td>2.3</td>
+                                    <td><span class="badge bg-warning">Medium Risk</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info">Monitor</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script th:inline="javascript">
+        // Pass/Fail Chart
+        const passFailCtx = document.getElementById('passFailChart').getContext('2d');
+        const passFailChart = new Chart(passFailCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pass', 'Fail'],
+                datasets: [{
+                    data: [/*[[${passRate}]]*/ 72.3, /*[[${failRate}]]*/ 27.7],
+                    backgroundColor: ['#28a745', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Pass/Fail Distribution'
+                    }
+                }
+            }
+        });
+        
+        // Attendance Chart
+        const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+        const attendanceChart = new Chart(attendanceCtx, {
+            type: 'bar',
+            data: {
+                labels: ['<60%', '60-70%', '70-80%', '80-90%', '90-100%'],
+                datasets: [{
+                    label: 'Pass Rate',
+                    data: [15, 40, 75, 90, 95],
+                    backgroundColor: 'rgba(40, 167, 69, 0.5)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Pass Rate (%)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Attendance Range'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Pass Rate by Attendance Level'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
